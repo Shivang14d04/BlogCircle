@@ -595,4 +595,353 @@ The collection expects documents with these fields:
 
 ---
 
-_Last Updated: September 20, 2025_
+## UI Components
+
+### Input Component (input.jsx)
+
+**Purpose**: Reusable form input component with label support and ref forwarding
+
+**Location**: `/MegaBlog/src/components/input.jsx`
+
+#### Implementation
+
+```jsx
+import React from "react";
+import { useId } from "react";
+
+const Input = React.forwardRef(function Input(
+  { type = "text", label, className = "", ...props },
+  ref
+) {
+  const id = useId();
+  return (
+    <div className="w-full">
+      {label && (
+        <label
+          htmlFor={id}
+          className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+        >
+          {label}
+        </label>
+      )}
+      <input
+        type={type}
+        className={`px-3 py-2 rounded-lg bg-white text-black outline-none focus:bg-gray-50 duration-200 border border-gray-200 w-full ${className}`}
+        ref={ref}
+        {...props}
+        id={id}
+      />
+    </div>
+  );
+});
+
+export default Input;
+```
+
+#### Key Features
+
+✅ **React.forwardRef**: Allows parent components to access the input DOM element directly
+✅ **useId Hook**: Generates unique IDs to associate labels with inputs for accessibility
+✅ **Flexible Props**: Accepts any HTML input props via spread operator
+✅ **Default Values**: Sets sensible defaults for type ("text") and className
+✅ **Accessibility**: Proper label-input association using htmlFor and id
+✅ **Conditional Rendering**: Only shows label if provided
+✅ **Tailwind Styling**: Pre-styled with responsive design and focus states
+
+#### Props
+
+- `type`: Input type (default: "text")
+- `label`: Optional label text
+- `className`: Additional CSS classes
+- `ref`: React ref for direct DOM access
+- `...props`: All other HTML input attributes
+
+#### Usage Examples
+
+```jsx
+import Input from "./components/input";
+
+// Basic usage
+<Input placeholder="Enter your name" />
+
+// With label
+<Input
+  label="Email Address"
+  type="email"
+  placeholder="user@example.com"
+/>
+
+// With ref for form control
+const emailRef = useRef();
+<Input
+  ref={emailRef}
+  label="Email"
+  type="email"
+  required
+/>
+
+// With custom styling
+<Input
+  label="Search"
+  className="border-blue-500"
+  placeholder="Search posts..."
+/>
+```
+
+---
+
+### Button Component (button.jsx)
+
+**Purpose**: Reusable button component with customizable colors and styling
+
+**Location**: `/MegaBlog/src/components/button.jsx`
+
+#### Implementation
+
+```jsx
+export function Button({
+  children,
+  type = "button",
+  bgColor = "blue",
+  textColor = "white",
+  className = "",
+  ...props
+}) {
+  return (
+    <button
+      className={`px-4 py-2 rounded-lg ${bgColor} ${textColor} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+#### Key Features
+
+✅ **Flexible Content**: Uses children prop for button content
+✅ **Customizable Colors**: Separate background and text color props
+✅ **Default Styling**: Pre-configured padding and border radius
+✅ **Prop Forwarding**: Passes through all standard button attributes
+✅ **Type Safety**: Defaults to "button" type to prevent accidental form submissions
+
+#### Props
+
+- `children`: Button content (text, icons, etc.)
+- `type`: Button type (default: "button")
+- `bgColor`: Background color class (default: "blue")
+- `textColor`: Text color class (default: "white")
+- `className`: Additional CSS classes
+- `...props`: All other HTML button attributes
+
+#### Usage Examples
+
+```jsx
+import { Button } from "./components/button";
+
+// Basic usage
+<Button>Click Me</Button>
+
+// Custom colors
+<Button bgColor="bg-red-500" textColor="text-white">
+  Delete Post
+</Button>
+
+// Form submit button
+<Button type="submit" bgColor="bg-green-600">
+  Save Post
+</Button>
+
+// With click handler
+<Button
+  onClick={() => handleLogin()}
+  bgColor="bg-blue-600"
+>
+  Login
+</Button>
+
+// With additional styling
+<Button
+  className="w-full font-bold"
+  bgColor="bg-purple-500"
+>
+  Full Width Button
+</Button>
+```
+
+#### Styling Notes
+
+⚠️ **Color Classes**: Expects full Tailwind classes (e.g., "bg-blue-500", not just "blue")
+⚠️ **Default Colors**: Default values "blue" and "white" may not work without proper Tailwind classes
+
+---
+
+### Select Component (select.jsx)
+
+**Purpose**: Reusable dropdown select component with options mapping and ref forwarding
+
+**Location**: `/MegaBlog/src/components/select.jsx`
+
+#### Implementation
+
+```jsx
+import React, { useId } from "react";
+
+function Select({ options, label, className, ...props }, ref) {
+  const id = useId();
+  return (
+    <div className="w-full">
+      {label && <label htmlFor={id} className=""></label>}
+      <select
+        {...props}
+        id={id}
+        ref={ref}
+        className={`w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500 ${className}`}
+      >
+        {options?.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+export default React.forwardRef(Select);
+```
+
+#### Key Features
+
+✅ **React.forwardRef**: Alternative ref forwarding pattern (export-time wrapping)
+✅ **useId Hook**: Unique ID generation for label-select association
+✅ **Safe Options Mapping**: Uses optional chaining to prevent crashes with empty arrays
+✅ **Accessible**: Proper label-select relationship
+✅ **Comprehensive Styling**: Full focus, disabled, and hover states
+✅ **Flexible Props**: Accepts all standard select attributes
+
+#### Props
+
+- `options`: Array of option values/labels
+- `label`: Optional label text
+- `className`: Additional CSS classes
+- `ref`: React ref for direct DOM access
+- `...props`: All other HTML select attributes
+
+#### ForwardRef Pattern Differences
+
+**Input Component Pattern**:
+
+```jsx
+const Input = React.forwardRef(function Input(props, ref) {
+  // component logic
+});
+export default Input;
+```
+
+**Select Component Pattern**:
+
+```jsx
+function Select(props, ref) {
+  // component logic
+}
+export default React.forwardRef(Select);
+```
+
+Both approaches achieve the same result - they're just different ways of implementing React.forwardRef.
+
+#### Usage Examples
+
+```jsx
+import Select from "./components/select";
+
+// Basic usage
+<Select
+  options={["active", "draft", "archived"]}
+  label="Post Status"
+/>
+
+// With default value
+<Select
+  options={["technology", "lifestyle", "business"]}
+  label="Category"
+  defaultValue="technology"
+/>
+
+// With ref for form control
+const statusRef = useRef();
+<Select
+  ref={statusRef}
+  options={["public", "private"]}
+  label="Visibility"
+/>
+
+// With custom styling and change handler
+<Select
+  options={categories}
+  label="Select Category"
+  className="border-purple-300"
+  onChange={(e) => setSelectedCategory(e.target.value)}
+/>
+```
+
+#### Error Handling
+
+The component includes a comment about handling empty options arrays:
+
+```jsx
+{
+  /* options array can be empty so we need to handle that case
+    and if options array is empty then the map will not loop and app will definitely crash
+    So, we need to provide a fallback UI in case there are no options, we can also do this through if else like if length of options is 0 then we can show a message */
+}
+```
+
+**Current Implementation**: Uses optional chaining (`options?.map()`) to safely handle undefined/null options
+
+**Potential Improvement**:
+
+```jsx
+{
+  options && options.length > 0 ? (
+    options.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))
+  ) : (
+    <option disabled>No options available</option>
+  );
+}
+```
+
+#### Best Practices
+
+1. **Complex Options**: For objects with different display/value pairs:
+
+   ```jsx
+   options={[
+     { value: "tech", label: "Technology" },
+     { value: "life", label: "Lifestyle" }
+   ]}
+   ```
+
+2. **Validation**: Add required attribute for mandatory selections:
+
+   ```jsx
+   <Select options={statusOptions} label="Status" required />
+   ```
+
+3. **Default Values**: Always provide meaningful defaults:
+   ```jsx
+   <Select
+     options={["active", "draft"]}
+     defaultValue="draft"
+     label="Initial Status"
+   />
+   ```
+
+---
+
+_Last Updated: September 22, 2025_
