@@ -1,3 +1,3 @@
 export default function Logo({ width = "100px" }) {
-  return <h1 className="text-3xl font-bold text-gray-900">MegaBlog</h1>;
+  return <h1 className="text-3xl font-bold text-gray-900">BlogCircle</h1>;
 }

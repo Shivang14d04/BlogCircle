@@ -944,4 +944,421 @@ The component includes a comment about handling empty options arrays:
 
 ---
 
-_Last Updated: September 22, 2025_
+## Authentication & UI Components
+
+### AuthLayout Component (AuthLayout.jsx)
+
+**Purpose**: Protected route wrapper component that handles authentication-based navigation
+
+**Location**: `/MegaBlog/src/components/AuthLayout.jsx`
+
+#### Implementation
+
+```jsx
+import React from "react";
+import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function Protected({ children, authentication = true }) {
+  const navigate = useNavigate();
+  const [loader, setLoader] = useState(true);
+  const authStatus = useSelector((state) => state.auth.status);
+
+  useEffect(() => {
+    if (authentication && authStatus !== authentication) {
+      navigate("/login");
+    } else if (!authentication && authStatus !== authentication) {
+      navigate("/");
+    }
+    setLoader(false);
+  }, [authentication, navigate, authStatus]);
+
+  return loader ? <h1>Loading...</h1> : <>{children}</>;
+}
+```
+
+#### Key Features
+
+✅ **Route Protection**: Controls access based on authentication status
+✅ **Redux Integration**: Uses useSelector to get auth state from Redux store
+✅ **Loading State**: Shows loading indicator during auth check
+✅ **Navigation Logic**: Redirects users based on auth requirements
+✅ **Flexible Authentication**: Can protect or restrict based on auth status
+
+#### Props
+
+- `children`: Components to render if authentication check passes
+- `authentication`: Boolean indicating if route requires authentication (default: true)
+
+#### Authentication Logic
+
+1. **authentication = true** (Protected Routes):
+
+   - If user not authenticated → Redirect to `/login`
+   - If user authenticated → Show children
+
+2. **authentication = false** (Guest-only Routes):
+   - If user authenticated → Redirect to `/` (home)
+   - If user not authenticated → Show children
+
+#### Usage Examples
+
+```jsx
+import Protected from "./components/AuthLayout";
+
+// Protect routes that require login
+<Protected authentication={true}>
+  <Dashboard />
+</Protected>
+
+// Guest-only routes (login/signup pages)
+<Protected authentication={false}>
+  <LoginPage />
+</Protected>
+
+// Default behavior (requires authentication)
+<Protected>
+  <PrivateContent />
+</Protected>
+```
+
+---
+
+### Login Component (login.jsx)
+
+**Purpose**: User authentication form with validation and error handling
+
+**Location**: `/MegaBlog/src/components/login.jsx`
+
+#### Key Features
+
+✅ **React Hook Form**: Form validation and handling
+✅ **Redux Integration**: Dispatches login action to store user data
+✅ **Error Handling**: Displays authentication errors to user
+✅ **Navigation**: Redirects to home after successful login
+✅ **Form Validation**: Email format and password requirements
+✅ **Responsive Design**: Mobile-friendly centered layout
+
+#### Implementation Highlights
+
+```jsx
+const login = async (data) => {
+  setError("");
+  try {
+    const session = await authService.login(data);
+    if (session) {
+      const userData = await authService.getAccount();
+      if (userData) {
+        dispatch(authLogin(userData));
+        navigate("/");
+      }
+    }
+  } catch (error) {
+    setError(error.message);
+  }
+};
+```
+
+#### Form Validation Rules
+
+**Email Field**:
+
+```jsx
+{...register("email", {
+  required: true,
+  validate: {
+    matchPattern: (value) =>
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) ||
+      "Invalid email address",
+  },
+})}
+```
+
+**Password Field**:
+
+```jsx
+{...register("password", {
+  required: true,
+  minLength: {
+    value: 6,
+    message: "Password must be at least 6 characters long",
+  },
+})}
+```
+
+#### User Flow
+
+1. User enters email and password
+2. Form validates input client-side
+3. Calls `authService.login()` with form data
+4. If successful, gets user account data
+5. Dispatches user data to Redux store
+6. Redirects to home page
+7. Shows error message if login fails
+
+---
+
+### SignUp Component (signUp.jsx)
+
+**Purpose**: User registration form with account creation and auto-login
+
+**Location**: `/MegaBlog/src/components/signUp.jsx`
+
+#### Key Features
+
+✅ **Account Creation**: Creates new user account via Appwrite
+✅ **Auto-Login**: Automatically logs in user after successful registration
+✅ **Form Validation**: Name, email, and password validation
+✅ **Error Handling**: Displays registration errors
+✅ **Redux Integration**: Updates auth state after registration
+✅ **Responsive Design**: Styled form with proper spacing
+
+#### Implementation Highlights
+
+```jsx
+const create = async (data) => {
+  setError("");
+  try {
+    const userData = await authService.createAccount(data);
+    if (userData) {
+      const userData = await authService.getAccount();
+      if (userData) dispatch(login(userData));
+      navigate("/");
+    }
+  } catch (error) {
+    setError(error.message);
+  }
+};
+```
+
+#### Form Fields
+
+**Full Name**:
+
+```jsx
+<Input
+  label="Full Name: "
+  placeholder="Enter your full name"
+  {...register("name", { required: true })}
+/>
+```
+
+**Email** (with validation):
+
+```jsx
+{...register("email", {
+  required: true,
+  validate: {
+    matchPatern: (value) =>
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
+      "Email address must be a valid address",
+  },
+})}
+```
+
+**Password**:
+
+```jsx
+{...register("password", { required: true })}
+```
+
+#### User Flow
+
+1. User fills registration form (name, email, password)
+2. Form validates input
+3. Calls `authService.createAccount()` with form data
+4. If successful, automatically gets account data
+5. Dispatches user data to Redux store (auto-login)
+6. Redirects to home page
+7. Shows error if registration fails
+
+#### Note on Validation
+
+⚠️ **Typo in Email Validation**: `matchPatern` should be `matchPattern`
+
+---
+
+### PostCard Component (PostCard.jsx)
+
+**Purpose**: Reusable card component for displaying blog post previews
+
+**Location**: `/MegaBlog/src/components/PostCard.jsx`
+
+#### Implementation
+
+```jsx
+import React from "react";
+import appwriteService from "../appwrite/config";
+import { Link } from "react-router-dom";
+
+function PostCard({ $id, title, featuredImage }) {
+  return (
+    <Link to={`/post{$id}`}>
+      <div className="w-full bg-gray-100 rounded-xl p-4">
+        <div className="w-full justify-centre mb-4">
+          <img
+            src={appwriteService.getFilePreview(featuredImage)}
+            alt={title}
+            className="w-full h-48 object-cover rounded-lg"
+          />
+        </div>
+        <h2 className="text-lg font-semibold">{title}</h2>
+      </div>
+    </Link>
+  );
+}
+
+export default PostCard;
+```
+
+#### Key Features
+
+✅ **Clickable Card**: Entire card is wrapped in Link for navigation
+✅ **Image Preview**: Uses Appwrite's getFilePreview for featured images
+✅ **Responsive Design**: Fixed height image with object-cover
+✅ **Clean Styling**: Rounded corners and proper spacing
+✅ **Accessibility**: Alt text for images
+
+#### Props
+
+- `$id`: Post document ID (note the $ prefix from Appwrite)
+- `title`: Post title
+- `featuredImage`: Image file ID for preview
+
+#### Issues Found
+
+⚠️ **Link URL Bug**: `/post{$id}` should be `/post/${$id}` (template literal syntax error)
+⚠️ **CSS Typo**: `justify-centre` should be `justify-center`
+
+#### Corrected Implementation
+
+```jsx
+<Link to={`/post/${$id}`}>
+  <div className="w-full bg-gray-100 rounded-xl p-4">
+    <div className="w-full justify-center mb-4">
+      <img
+        src={appwriteService.getFilePreview(featuredImage)}
+        alt={title}
+        className="w-full h-48 object-cover rounded-lg"
+      />
+    </div>
+    <h2 className="text-lg font-semibold">{title}</h2>
+  </div>
+</Link>
+```
+
+#### Usage Examples
+
+```jsx
+import PostCard from "./components/PostCard";
+
+// Basic usage
+<PostCard
+  $id="post123"
+  title="My Blog Post"
+  featuredImage="image456"
+/>
+
+// In a grid layout
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {posts.map((post) => (
+    <PostCard
+      key={post.$id}
+      $id={post.$id}
+      title={post.title}
+      featuredImage={post.featuredImage}
+    />
+  ))}
+</div>
+```
+
+#### Design Pattern
+
+This component follows the **Card Pattern** commonly used in modern web applications:
+
+- **Preview**: Shows essential information (image + title)
+- **Navigation**: Entire card is clickable
+- **Consistent Sizing**: Fixed dimensions for grid layouts
+- **Image Optimization**: Uses preview service for performance
+
+#### Integration with Appwrite
+
+- Uses `appwriteService.getFilePreview(featuredImage)` to generate optimized image URLs
+- Expects `$id` prop which matches Appwrite's document ID format
+- Works seamlessly with Appwrite's file storage service
+
+---
+
+## Common Patterns Across Components
+
+### Form Handling Pattern
+
+```jsx
+// 1. Setup form and state
+const { register, handleSubmit } = useForm();
+const [error, setError] = useState("");
+
+// 2. Handle form submission
+const handleForm = async (data) => {
+  setError(""); // Clear previous errors
+  try {
+    // API call
+    const result = await someService.action(data);
+    // Handle success (navigation, state update)
+  } catch (error) {
+    setError(error.message);
+  }
+};
+
+// 3. Render form
+<form onSubmit={handleSubmit(handleForm)}>
+  {error && <p className="text-red-500">{error}</p>}
+  {/* Form fields */}
+</form>;
+```
+
+### Authentication Flow Pattern
+
+```jsx
+// 1. Authenticate user
+const session = (await authService.login) / createAccount(data);
+
+// 2. Get user data
+if (session) {
+  const userData = await authService.getAccount();
+
+  // 3. Update Redux store
+  if (userData) {
+    dispatch(loginAction(userData));
+
+    // 4. Navigate to protected area
+    navigate("/");
+  }
+}
+```
+
+### Component Structure Pattern
+
+```jsx
+// 1. Imports
+import React from "react";
+import /* hooks */ "react";
+import /* routing */ "react-router-dom";
+import /* state management */ "react-redux";
+
+// 2. Component function
+function ComponentName() {
+  // 3. State and hooks
+  // 4. Event handlers
+  // 5. Effects
+  // 6. Render JSX
+}
+
+// 7. Export
+export default ComponentName;
+```
+
+---
+
+_Last Updated: September 25, 2025_

@@ -6,16 +6,16 @@ export class Service {
   bucket;
   constructor() {
     this.client
-      .setEndpoint(conf.APPWRITE_ENDPOINT) // Your API Endpoint
-      .setProject(conf.APPWRITE_PROJECT_ID);
+      .setEndpoint(conf.appwriteUrl) // Your API Endpoint
+      .setProject(conf.appwriteProjectId);
     this.databases = new Databases(this.client);
     this.bucket = new Storage(this.client);
   }
   async createPost({ title, slug, content, featuredImage, status, userId }) {
     try {
       return await this.databases.createDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_COLLECTION_ID,
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
         slug,
         {
           title,
@@ -33,8 +33,8 @@ export class Service {
   async updatePost(slug, { title, content, featuredImage, status }) {
     try {
       return await this.databases.updateDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_COLLECTION_ID,
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
         slug,
         {
           title,
@@ -51,8 +51,8 @@ export class Service {
   async deletePost(slug) {
     try {
       await this.databases.deleteDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_COLLECTION_ID,
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
         slug
       );
       return true;
@@ -65,8 +65,8 @@ export class Service {
   async getPost(slug) {
     try {
       return await this.databases.getDocument(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_COLLECTION_ID,
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
         slug
       );
     } catch (error) {
@@ -78,8 +78,8 @@ export class Service {
   async getPosts(queries = [Query.equal("status", "active")]) {
     try {
       return await this.databases.listDocuments(
-        conf.APPWRITE_DATABASE_ID,
-        conf.APPWRITE_COLLECTION_ID,
+        conf.appwriteDatabaseId,
+        conf.appwriteCollectionId,
         queries
       );
     } catch (error) {
@@ -92,7 +92,7 @@ export class Service {
   async uploadFile(file) {
     try {
       return await this.bucket.createFile(
-        conf.APPWRITE_BUCKET_ID,
+        conf.appwriteBucketId,
         ID.unique(),
         file
       );
@@ -104,7 +104,7 @@ export class Service {
 
   async deleteFile(fileId) {
     try {
-      await this.bucket.deleteFile(conf.APPWRITE_BUCKET_ID, fileId);
+      await this.bucket.deleteFile(conf.appwriteBucketId, fileId);
       return true;
     } catch (error) {
       console.log("Appwrite service  :: deleteFile error", error);
@@ -113,7 +113,8 @@ export class Service {
   }
 
   getFilePreview(fileId) {
-    return this.bucket.getFilePreview(conf.APPWRITE_BUCKET_ID, fileId);
+    return this.bucket.getFilePreview(conf.appwriteBucketId, fileId);
   }
 }
-export default Service;
+const service = new Service();
+export default service;

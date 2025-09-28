@@ -1,97 +1,97 @@
-import React from "react";
-import { useState } from "react";
-import { login as authLogin } from "../store/authSlice";
-import { Button, Input, Logo } from "./index";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import authService from "../appwrite/auth";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { login as authLogin } from "../store/authSlice";
+import { Button, Input, Logo } from "./index";
+import authService from "../appwrite/auth";
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const { register, handleSubmit } = useForm();
-  const login = async (data) => {
+
+  const handleLogin = async (data) => {
     setError("");
-    // we use setError to clear previous error
-    // so that user can try to login again
+    setLoading(true);
     try {
-      const session = await authService.login(data);
-      if (session) {
-        const userData = await authService.getAccount();
-        if (userData) {
-          dispatch(authLogin(userData));
-          navigate("/");
-        }
+      await authService.login(data); // creates session
+      const currentUser = await authService.getCurrentUser(); // get user details
+      if (currentUser) {
+        dispatch(authLogin(currentUser));
+        navigate("/");
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
-    <div className="flex items-center justify-center w-full">
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="mb-2 flex justify-center">
-          <span className="inline-block w-full max-w-[100px]">
-            <Logo width="100%" />
-          </span>
+    <div className="min-h-screen flex items-center justify-center bg-[#F2F4F3] px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+        <div className="flex justify-center mb-6">
+          <Logo width="80px" />
         </div>
-        <h2 className="text-center text-2xl font-bold leading-tight">
-          Sign in to your account
+
+        <h2 className="text-center text-3xl font-extrabold text-[#0A0908] mb-2">
+          Welcome Back
         </h2>
-        <p className="mt-2 text-center text-base text-black/60">
-          Don&apos;t have any account?&nbsp;
-          <Link
-            to="/signup"
-            className="font-medium text-primary transition-all duration-200 hover:underline"
-          >
-            Sign Up
+        <p className="text-center text-gray-500 mb-4 text-sm">
+          Sign in to continue to your account
+        </p>
+
+        <p className="text-center text-sm mb-4 text-gray-600">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-[#0A0908] font-medium hover:underline">
+            Sign up
           </Link>
         </p>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-        <form onSubmit={handleSubmit(login)}>
-          {/* handleSubmit is a function from react-hook-form // it will call the
-          login function with form data*/}
-          <div
-            className="
-          space-y-5"
-          >
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              type="email"
-              {...register("email", {
-                /* we  spread the validation rules here or you can say it like this
-                    we need to spread the registration rules */
-                required: true,
-                validate: {
-                  matchPattern: (value) =>
-                    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-                      value
-                    ) || "Invalid email address",
-                },
-              })}
-            />
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              type="password"
-              {...register("password", {
-                required: true,
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters long",
-                },
-              })}
-            />
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm rounded-lg p-2 mb-4 text-center">
+            {error}
           </div>
+        )}
+
+        <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
+          <Input
+            label="Email"
+            placeholder="Enter your email"
+            type="email"
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message: "Invalid email address",
+              },
+            })}
+          />
+          <Input
+            label="Password"
+            placeholder="Enter your password"
+            type="password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: { value: 6, message: "Password must be at least 6 characters" },
+            })}
+          />
+          <Button
+            type="submit"
+            className={`w-full bg-[#0A0908] text-white hover:bg-gray-800 transition-colors duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            disabled={loading}
+          >
+            {loading ? "Signing In..." : "Sign In"}
+          </Button>
         </form>
       </div>
     </div>
   );
 }
+
 export default Login;
