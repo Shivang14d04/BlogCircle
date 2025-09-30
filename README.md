@@ -17,14 +17,14 @@ BlogCircle is a full-stack blog platform that allows users to create their own a
 ---
 
 ## 🛠 Tech Stack
-**JavaScript** – Core programming language for the application
-**Frontend Framework** – React (with Vite for fast builds)
-**Styling** – Tailwind CSS for responsive, modern design
-**State Management** – Redux Toolkit for predictable state handling
-**Routing** – React Router for client-side navigation
-**Backend** – Appwrite for authentication and data storage
-**Rich-Text Editor** – TinyMCE for creating and editing blog content
-**Package Manager** – npm for managing dependencies
+- **JavaScript** – Core programming language for the application
+- **Frontend Framework** – React (with Vite for fast builds)
+-**Styling** – Tailwind CSS for responsive, modern design
+- **State Management** – Redux Toolkit for predictable state handling
+- **Routing** – React Router for client-side navigation
+- **Backend** – Appwrite for authentication and data storage
+- **Rich-Text Editor** – TinyMCE for creating and editing blog content
+- **Package Manager** – npm for managing dependencies
 ---
 
 ## Getting Started
