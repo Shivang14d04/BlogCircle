@@ -1,12 +1,46 @@
-# React + Vite
+# BlogCircle
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+BlogCircle is a full-stack blog platform that allows users to create their own accounts, write and publish blog posts using a rich-text editor, browse posts from the entire community, view individual articles in detail, and manage (edit or delete) their own content — all within a clean, intuitive, and responsive web interface designed for an engaging blogging experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 Features
+- 🔑 **User Authentication** with Appwrite (sign up / login/logout)
+- 📝 **Create, Edit & Delete Posts** using the **TinyMCE rich-text editor**
+- 📰 **View All Posts** on the home feed
+- 📄 **Detailed Post View** with formatted content
+- 📱 **Responsive UI** with Tailwind CSS
+- ⚡ **Global State Management** using **Redux Toolkit**
+- 🔀 **Client-side Routing** with React Router
+- 🗄 **Appwrite Backend** for authentication and data storage
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠 Tech Stack
+**JavaScript** – Core programming language for the application
+**Frontend Framework** – React (with Vite for fast builds)
+**Styling** – Tailwind CSS for responsive, modern design
+**State Management** – Redux Toolkit for predictable state handling
+**Routing** – React Router for client-side navigation
+**Backend** – Appwrite for authentication and data storage
+**Rich-Text Editor** – TinyMCE for creating and editing blog content
+**Package Manager** – npm for managing dependencies
+---
+
+## Getting Started
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/Shivang14d04/BlogCircle.git
+cd BlogCircle
+```
+
+# Install dependencies
+```
+npm install
+```
+# Run Locally
+```
+npm run dev
+```
